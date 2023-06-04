@@ -65,16 +65,46 @@ async function run() {
             res.send(result);
         });
 
+        // ===========================================================
+        //                      Checkout/Booking data
+        // ===========================================================
+        // to get some checkout info from db: get one person info
+        // like: http://localhost:5000/checkout-info?email=assunnah@gmail.com&sort=1
+        app.get('/checkout-info', async (req, res) => {
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await checkOutInfoCollection.find(query).toArray();
+            res.send(result)
+        })
 
-
-
-
-        // check Out or Booking Info route
+        // check Out or Booking Info route for post
         app.post('/checkout-info', async (req, res) => {
             const checkoutInfo = req.body;
             const result = await checkOutInfoCollection.insertOne(checkoutInfo);
             res.send(result);
         });
+
+        // get specific check Out or Booking cart data
+        app.get('/checkout-info/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await checkOutInfoCollection.findOne(query);
+            res.send(result);
+        })
+
+        // check Out or Booking Info delete one cart by _id
+        app.delete('/checkout-info/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await checkOutInfoCollection.deleteOne(query);
+            res.send(result);
+        })
+
+         // ===========================================================
+        // ===========================================================
+
 
 
         // Send a ping to confirm a successful connection
