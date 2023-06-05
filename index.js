@@ -65,6 +65,25 @@ async function run() {
             res.send(result);
         });
 
+        // // get specific data via id for checkout
+        // app.get('/services/checkout', async (req, res) => {
+        //     const cursor = servicesCollection.find();
+        //     const result = await cursor.toArray();
+        //     res.send(result);
+        // })
+
+        // app.get('/services/checkout/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: new ObjectId(id) }
+
+        //     const options = {
+        //         // Include only the `title` and `imdb` fields in the returned document
+        //         projection: { title: 1, price: 1, img: 1, service_id: 1 },
+        //     };
+        //     const result = await servicesCollection.findOne(query, options);
+        //     res.send(result);
+        // });
+
         // ===========================================================
         //                      Checkout/Booking data
         // ===========================================================
@@ -94,7 +113,7 @@ async function run() {
             res.send(result);
         })
 
-        // check Out or Booking Info delete one cart by _id
+        // delete check Out or Booking Info one cart by _id
         app.delete('/checkout-info/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
@@ -102,7 +121,27 @@ async function run() {
             res.send(result);
         })
 
-         // ===========================================================
+        // delete check Out or Booking Info one cart by _id
+        app.delete('/checkout-info', async (req, res) => {
+            const query = { carDoctorDb: { $regex: "checkout-info" } };
+            const result = await checkOutInfoCollection.deleteMany(query);
+            res.send(result);
+        })
+
+        app.patch('/checkout-info/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatingCheckout = req.body;
+            const updateDoc = {
+                $set:{
+                    status: updatingCheckout.status
+                },
+            };
+            const result = await checkOutInfoCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // ===========================================================
         // ===========================================================
 
 
