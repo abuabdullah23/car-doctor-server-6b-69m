@@ -23,6 +23,27 @@ const client = new MongoClient(uri, {
     }
 });
 
+
+// verify jwt
+const verifyJWT = (req, res, next) => {
+    console.log('hitting jwt');
+    console.log(req.headers.authorization);
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'unauthorized access' })
+    }
+    const token = authorization.split(' ')[1];
+    console.log('Token inside verifyJWT:', token);
+    jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, (error, decoded) => {
+        if (error) {
+            return res.status(403).send({ error: true, message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+
+}
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -33,13 +54,14 @@ async function run() {
         const checkOutInfoCollection = client.db('carDoctorDb').collection('checkOutInfo');
 
         // JWT
-        app.post('/jwt', async(req, res) => {
+        app.post('/jwt', async (req, res) => {
             const user = req.body;
             console.log(user)
             const token = jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, {
-                expiresIn: '1h' });
+                expiresIn: '1h'
+            });
             console.log(token)
-            res.send({token});
+            res.send({ token });
         })
 
 
@@ -102,7 +124,9 @@ async function run() {
         // ===========================================================
         // to get some checkout info from db: get one person info
         // like: http://localhost:5000/checkout-info?email=assunnah@gmail.com&sort=1
-        app.get('/checkout-info', async (req, res) => {
+        app.get('/checkout-info', verifyJWT, async (req, res) => {
+            // console.log(req.headers.authorization)
+            console.log('came back after jwt verify')
             let query = {};
             if (req.query?.email) {
                 query = { email: req.query.email }
